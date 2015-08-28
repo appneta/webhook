@@ -16,7 +16,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/adnanh/webhook/hook"
+	"github.com/appneta/webhook/hook"
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
@@ -191,6 +191,10 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 
 				if h.CaptureCommandOutput {
 					response := handleHook(h, &headers, &query, &payload, &body)
+					// If hook configuration specifies a Content-Type header, set it
+					if h.ResponseContentType != "" {
+						w.Header().Set("Content-Type", h.ResponseContentType)
+					}
 					fmt.Fprintf(w, response)
 				} else {
 					go handleHook(h, &headers, &query, &payload, &body)
@@ -233,11 +237,17 @@ func handleHook(h *hook.Hook, headers, query, payload *map[string]interface{}, b
 	log.Printf("finished handling %s\n", h.ID)
 
 	var response []byte
-	response, err = json.Marshal(&hook.CommandStatusResponse{ResponseMessage: h.ResponseMessage, Output: string(out), Error: errorResponse})
 
-	if err != nil {
-		log.Printf("error marshalling response: %+v", err)
-		return h.ResponseMessage
+	// If true, will return plaintext response instead of JSON
+	if h.ReturnRawResponse {
+		response = out
+	} else {
+		response, err = json.Marshal(&hook.CommandStatusResponse{ResponseMessage: h.ResponseMessage, Output: string(out), Error: errorResponse})
+
+		if err != nil {
+			log.Printf("error marshalling response: %+v", err)
+			return h.ResponseMessage
+		}
 	}
 
 	return string(response)

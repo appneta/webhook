@@ -194,6 +194,8 @@ type Hook struct {
 	CommandWorkingDirectory string     `json:"command-working-directory"`
 	ResponseMessage         string     `json:"response-message"`
 	CaptureCommandOutput    bool       `json:"include-command-output-in-response"`
+	ReturnRawResponse       bool       `json:"return-raw-response"`
+	ResponseContentType     string     `json:"response-content-type"`
 	PassArgumentsToCommand  []Argument `json:"pass-arguments-to-command"`
 	JSONStringParameters    []Argument `json:"parse-parameters-as-json"`
 	TriggerRule             *Rules     `json:"trigger-rule"`
