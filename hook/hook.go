@@ -195,7 +195,7 @@ type Hook struct {
 	ResponseMessage              string     `json:"response-message"`
 	CaptureCommandOutput         bool       `json:"include-command-output-in-response"`
 	ReturnRawResponse            bool       `json:"return-raw-response"`
-	SupplyArgumentsInEnvironment bool       `json:"pass-arguments-in-environment"`
+	SupplyArgumentsInEnvironment bool       `json:"supply-arguments-in-environment"`
 	ResponseContentType          string     `json:"response-content-type"`
 	PassArgumentsToCommand       []Argument `json:"pass-arguments-to-command"`
 	JSONStringParameters         []Argument `json:"parse-parameters-as-json"`
