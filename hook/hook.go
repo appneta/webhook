@@ -189,16 +189,17 @@ func (ha *Argument) Get(headers, query, payload *map[string]interface{}) (string
 
 // Hook type is a structure containing details for a single hook
 type Hook struct {
-	ID                      string     `json:"id"`
-	ExecuteCommand          string     `json:"execute-command"`
-	CommandWorkingDirectory string     `json:"command-working-directory"`
-	ResponseMessage         string     `json:"response-message"`
-	CaptureCommandOutput    bool       `json:"include-command-output-in-response"`
-	ReturnRawResponse       bool       `json:"return-raw-response"`
-	ResponseContentType     string     `json:"response-content-type"`
-	PassArgumentsToCommand  []Argument `json:"pass-arguments-to-command"`
-	JSONStringParameters    []Argument `json:"parse-parameters-as-json"`
-	TriggerRule             *Rules     `json:"trigger-rule"`
+	ID                           string     `json:"id"`
+	ExecuteCommand               string     `json:"execute-command"`
+	CommandWorkingDirectory      string     `json:"command-working-directory"`
+	ResponseMessage              string     `json:"response-message"`
+	CaptureCommandOutput         bool       `json:"include-command-output-in-response"`
+	ReturnRawResponse            bool       `json:"return-raw-response"`
+	SupplyArgumentsInEnvironment bool       `json:"pass-arguments-in-environment"`
+	ResponseContentType          string     `json:"response-content-type"`
+	PassArgumentsToCommand       []Argument `json:"pass-arguments-to-command"`
+	JSONStringParameters         []Argument `json:"parse-parameters-as-json"`
+	TriggerRule                  *Rules     `json:"trigger-rule"`
 }
 
 // ParseJSONParameters decodes specified arguments to JSON objects and replaces the
@@ -251,6 +252,29 @@ func (h *Hook) ExtractCommandArguments(headers, query, payload *map[string]inter
 			args = append(args, arg)
 		} else {
 			args = append(args, "")
+			log.Printf("couldn't retrieve argument for %+v\n", h.PassArgumentsToCommand[i])
+		}
+	}
+
+	return args
+}
+
+// ArgumentNamespace is used as a prefix for environment variables injected at hook execution time
+const (
+	ArgumentNamespace string = "HOOK_"
+)
+
+// ExtractCommandArgumentsForEnvironment creates a list of arguments in key=value
+// format to to be made available in the hook command's environment.
+func (h *Hook) ExtractCommandArgumentsForEnvironment(headers, query, payload *map[string]interface{}) []string {
+	var args = make([]string, 0)
+
+	args = append(args, ArgumentNamespace+"execute_command="+h.ExecuteCommand)
+
+	for i := range h.PassArgumentsToCommand {
+		if arg, ok := h.PassArgumentsToCommand[i].Get(headers, query, payload); ok {
+			args = append(args, ArgumentNamespace+h.PassArgumentsToCommand[i].Name+"="+arg)
+		} else {
 			log.Printf("couldn't retrieve argument for %+v\n", h.PassArgumentsToCommand[i])
 		}
 	}

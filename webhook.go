@@ -218,10 +218,15 @@ func hookHandler(w http.ResponseWriter, r *http.Request) {
 
 func handleHook(h *hook.Hook, headers, query, payload *map[string]interface{}, body *[]byte) string {
 	cmd := exec.Command(h.ExecuteCommand)
-	cmd.Args = h.ExtractCommandArguments(headers, query, payload)
 	cmd.Dir = h.CommandWorkingDirectory
 
-	log.Printf("executing %s (%s) with arguments %s using %s as cwd\n", h.ExecuteCommand, cmd.Path, cmd.Args, cmd.Dir)
+	if h.SupplyArgumentsInEnvironment {
+		cmd.Env = h.ExtractCommandArgumentsForEnvironment(headers, query, payload)
+		log.Printf("executing %s (%s) with environment '%s' using %s as cwd\n", h.ExecuteCommand, cmd.Path, cmd.Env, cmd.Dir)
+	} else {
+		cmd.Args = h.ExtractCommandArguments(headers, query, payload)
+		log.Printf("executing %s (%s) with arguments %s using %s as cwd\n", h.ExecuteCommand, cmd.Path, cmd.Args, cmd.Dir)
+	}
 
 	out, err := cmd.CombinedOutput()
 
