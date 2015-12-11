@@ -222,10 +222,10 @@ func handleHook(h *hook.Hook, headers, query, payload *map[string]interface{}, b
 
 	if h.SupplyArgumentsInEnvironment {
 		cmd.Env = h.ExtractCommandArgumentsForEnvironment(headers, query, payload)
-		log.Printf("executing %s (%s) with environment '%s' using %s as cwd\n", h.ExecuteCommand, cmd.Path, cmd.Env, cmd.Dir)
+		log.Printf("executing %s (%s) with environment '%s' using %s as cwd (hook: %v)\n", h.ExecuteCommand, cmd.Path, cmd.Env, cmd.Dir, h)
 	} else {
 		cmd.Args = h.ExtractCommandArguments(headers, query, payload)
-		log.Printf("executing %s (%s) with arguments %s using %s as cwd\n", h.ExecuteCommand, cmd.Path, cmd.Args, cmd.Dir)
+		log.Printf("executing %s (%s) with arguments %s using %s as cwd (hook: %v)\n", h.ExecuteCommand, cmd.Path, cmd.Args, cmd.Dir)
 	}
 
 	out, err := cmd.CombinedOutput()
